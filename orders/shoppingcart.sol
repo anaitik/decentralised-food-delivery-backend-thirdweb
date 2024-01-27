@@ -1,70 +1,67 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.9;
 
-contract FoodDeliveryPlatform {
-    struct Restaurant {
-        uint256 id;
-        string name;
-        string location;
-        // Add other restaurant details as needed
+import "@openzeppelin/contracts/utils/math/SafeMath.sol";
+
+contract CartContract {
+    using SafeMath for uint256;
+
+    struct CartItem {
+        uint256 dishId;
+        uint256 quantity;
     }
 
-    struct FoodDish {
-        uint256 id;
-        uint256 restaurantId;
-        string name;
-        // Add other food dish details as needed
-    }
+    mapping(address => CartItem[]) public userCarts;
 
-    mapping(uint256 => Restaurant) public restaurants;
-    uint256 public nextRestaurantId = 1;
+    event ItemAddedToCart(address user, uint256 dishId, uint256 quantity);
+    event ItemRemovedFromCart(address user, uint256 dishId, uint256 quantity);
 
-    mapping(uint256 => FoodDish[]) public restaurantToFoodDishes;
+    function addItemToCart(uint256 _dishId, uint256 _quantity) public {
+        require(_quantity > 0, "Quantity must be greater than 0");
 
-    event RestaurantCreated(uint256 id, string name, string location);
-    event FoodDishAdded(uint256 restaurantId, uint256 foodDishId, string name);
+        address user = msg.sender;
+        CartItem[] storage cart = userCarts[user];
 
-    function createRestaurant(string memory _name, string memory _location) public {
-        uint256 restaurantId = nextRestaurantId;
+        bool itemExists = false;
 
-        restaurants[restaurantId] = Restaurant({
-            id: restaurantId,
-            name: _name,
-            location: _location
-            // Add other restaurant details as needed
-        });
-
-        nextRestaurantId++;
-
-        emit RestaurantCreated(restaurantId, _name, _location);
-    }
-
-    function addFoodDish(uint256 _restaurantId, string memory _name) public {
-        uint256 foodDishId = restaurantToFoodDishes[_restaurantId].length;
-
-        restaurantToFoodDishes[_restaurantId].push(FoodDish({
-            id: foodDishId,
-            restaurantId: _restaurantId,
-            name: _name
-            // Add other food dish details as needed
-        }));
-
-        emit FoodDishAdded(_restaurantId, foodDishId, _name);
-    }
-
-    function getAllRestaurants() public view returns (Restaurant[] memory) {
-        Restaurant[] memory allRestaurants = new Restaurant[](nextRestaurantId - 1);
-
-        for (uint256 i = 1; i < nextRestaurantId; i++) {
-            allRestaurants[i - 1] = restaurants[i];
+        for (uint256 i = 0; i < cart.length; i++) {
+            if (cart[i].dishId == _dishId) {
+                cart[i].quantity = cart[i].quantity.add(_quantity);
+                itemExists = true;
+                break;
+            }
         }
 
-        return allRestaurants;
+        if (!itemExists) {
+            cart.push(CartItem({ dishId: _dishId, quantity: _quantity }));
+        }
+
+        emit ItemAddedToCart(user, _dishId, _quantity);
     }
 
-    function getFoodDishesByRestaurant(uint256 _restaurantId) public view returns (FoodDish[] memory) {
-        return restaurantToFoodDishes[_restaurantId];
+    function removeItemFromCart(uint256 _dishId, uint256 _quantity) public {
+        require(_quantity > 0, "Quantity must be greater than 0");
+
+        address user = msg.sender;
+        CartItem[] storage cart = userCarts[user];
+
+        for (uint256 i = 0; i < cart.length; i++) {
+            if (cart[i].dishId == _dishId) {
+                if (_quantity >= cart[i].quantity) {
+                    _quantity = cart[i].quantity;
+                    cart[i] = cart[cart.length - 1];
+                    cart.pop();
+                } else {
+                    cart[i].quantity = cart[i].quantity.sub(_quantity);
+                }
+
+                emit ItemRemovedFromCart(user, _dishId, _quantity);
+                break;
+            }
+        }
     }
 
-    // Add other functions as needed
+    function getUserCart() public view returns (CartItem[] memory) {
+        return userCarts[msg.sender];
+    }
 }
