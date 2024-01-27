@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.9;
 
-contract FoodDeliveryPlatform {
+contract RestaurantContract {
     struct Restaurant {
         uint256 id;
         string name;
@@ -9,20 +9,10 @@ contract FoodDeliveryPlatform {
         // Add other restaurant details as needed
     }
 
-    struct FoodDish {
-        uint256 id;
-        uint256 restaurantId;
-        string name;
-        // Add other food dish details as needed
-    }
-
     mapping(uint256 => Restaurant) public restaurants;
     uint256 public nextRestaurantId = 1;
 
-    mapping(uint256 => FoodDish[]) public restaurantToFoodDishes;
-
     event RestaurantCreated(uint256 id, string name, string location);
-    event FoodDishAdded(uint256 restaurantId, uint256 foodDishId, string name);
 
     function createRestaurant(string memory _name, string memory _location) public {
         uint256 restaurantId = nextRestaurantId;
@@ -39,17 +29,8 @@ contract FoodDeliveryPlatform {
         emit RestaurantCreated(restaurantId, _name, _location);
     }
 
-    function addFoodDish(uint256 _restaurantId, string memory _name) public {
-        uint256 foodDishId = restaurantToFoodDishes[_restaurantId].length;
-
-        restaurantToFoodDishes[_restaurantId].push(FoodDish({
-            id: foodDishId,
-            restaurantId: _restaurantId,
-            name: _name
-            // Add other food dish details as needed
-        }));
-
-        emit FoodDishAdded(_restaurantId, foodDishId, _name);
+    function getRestaurant(uint256 _restaurantId) public view returns (Restaurant memory) {
+        return restaurants[_restaurantId];
     }
 
     function getAllRestaurants() public view returns (Restaurant[] memory) {
@@ -61,10 +42,4 @@ contract FoodDeliveryPlatform {
 
         return allRestaurants;
     }
-
-    function getFoodDishesByRestaurant(uint256 _restaurantId) public view returns (FoodDish[] memory) {
-        return restaurantToFoodDishes[_restaurantId];
-    }
-
-    // Add other functions as needed
 }
