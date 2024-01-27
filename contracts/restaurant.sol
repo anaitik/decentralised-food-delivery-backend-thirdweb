@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.9;
 
-contract FoodDeliveryPlatform {
+contract RestaurantContract {
     struct Restaurant {
         uint256 id;
         string name;
@@ -89,6 +89,4 @@ contract FoodDeliveryPlatform {
     function getFoodDishesByRestaurant(uint256 _restaurantId) public view returns (FoodDish[] memory) {
         return restaurantToFoodDishes[_restaurantId];
     }
-
-    
 }
