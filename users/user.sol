@@ -1,117 +1,87 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.9;
 
-contract FoodDeliveryPlatform {
-    struct User {
+contract CustomerUserContract {
+    struct CustomerUser {
         string name;
         string phoneNumber;
         string email;
-        string countryCode;
-        // Additional parameters
-        string addressLine1;
-        string addressLine2;
-        string pincode;
+        // Additional parameters for customer user
+        string deliveryAddress;
     }
 
-    mapping(uint256 => User) public users;
-    uint256 public nextUserId = 1;
+    mapping(address => CustomerUser) public customerUsers;
 
-    event UserCreated(
-        uint256 userId,
+    event CustomerUserCreated(
+        address userAddress,
         string name,
         string phoneNumber,
         string email,
-        string countryCode,
         // Additional parameters in the event
-        string addressLine1,
-        string addressLine2,
-        string pincode
+        string deliveryAddress
     );
 
-    event UserUpdated(
-        uint256 userId,
+    event CustomerUserUpdated(
+        address userAddress,
         string name,
         string phoneNumber,
         string email,
-        string countryCode,
         // Additional parameters in the event
-        string addressLine1,
-        string addressLine2,
-        string pincode
+        string deliveryAddress
     );
 
-    function createUser(
+    modifier onlyCustomerUser() {
+        require(bytes(customerUsers[msg.sender].name).length > 0, "Not a registered customer user");
+        _;
+    }
+
+    function createCustomerUser(
         string memory _name,
         string memory _phoneNumber,
         string memory _email,
-        string memory _countryCode,
         // Additional parameters in the function
-        string memory _addressLine1,
-        string memory _addressLine2,
-        string memory _pincode
+        string memory _deliveryAddress
     ) public {
-        uint256 userId = nextUserId;
+        CustomerUser storage newCustomerUser = customerUsers[msg.sender];
 
-        User storage newUser = users[userId];
-
-        newUser.name = _name;
-        newUser.phoneNumber = _phoneNumber;
-        newUser.email = _email;
-        newUser.countryCode = _countryCode;
+        newCustomerUser.name = _name;
+        newCustomerUser.phoneNumber = _phoneNumber;
+        newCustomerUser.email = _email;
         // Assigning additional parameters
-        newUser.addressLine1 = _addressLine1;
-        newUser.addressLine2 = _addressLine2;
-        newUser.pincode = _pincode;
+        newCustomerUser.deliveryAddress = _deliveryAddress;
 
-        nextUserId++;
-
-        emit UserCreated(
-            userId,
+        emit CustomerUserCreated(
+            msg.sender,
             _name,
             _phoneNumber,
             _email,
-            _countryCode,
             // Emitting additional parameters
-            _addressLine1,
-            _addressLine2,
-            _pincode
+            _deliveryAddress
         );
     }
 
-    function editUser(
-        uint256 _userId,
+    function editCustomerUser(
         string memory _name,
         string memory _phoneNumber,
         string memory _email,
-        string memory _countryCode,
         // Additional parameters to edit
-        string memory _addressLine1,
-        string memory _addressLine2,
-        string memory _pincode
-    ) public {
-        User storage user = users[_userId];
-
-        require(bytes(user.name).length > 0, "User does not exist");
+        string memory _deliveryAddress
+    ) public onlyCustomerUser {
+        CustomerUser storage user = customerUsers[msg.sender];
 
         user.name = _name;
         user.phoneNumber = _phoneNumber;
         user.email = _email;
-        user.countryCode = _countryCode;
         // Updating additional parameters
-        user.addressLine1 = _addressLine1;
-        user.addressLine2 = _addressLine2;
-        user.pincode = _pincode;
+        user.deliveryAddress = _deliveryAddress;
 
-        emit UserUpdated(
-            _userId,
+        emit CustomerUserUpdated(
+            msg.sender,
             _name,
             _phoneNumber,
             _email,
-            _countryCode,
             // Emitting additional parameters
-            _addressLine1,
-            _addressLine2,
-            _pincode
+            _deliveryAddress
         );
     }
 }
