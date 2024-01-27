@@ -3,6 +3,7 @@ pragma solidity ^0.8.9;
 
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
+import "./OrderContract.sol";
 
 contract FoodDeliveryPayments is Ownable {
     mapping(address => uint256) public userBalances;
@@ -15,6 +16,12 @@ contract FoodDeliveryPayments is Ownable {
     event DepositMade(address account, uint256 amount, bool isToken, address tokenAddress);
     event WithdrawalMade(address account, uint256 amount, bool isToken, address tokenAddress);
     event RefundMade(uint256 paymentId, address from, address to, uint256 amount, bool isToken, address tokenAddress);
+
+    OrderContract public orderContract;
+
+    constructor(address _orderContractAddress) {
+        orderContract = OrderContract(_orderContractAddress);
+    }
 
     modifier onlyAdmin() {
         require(owner() == msg.sender, "Only the owner can call this function");
